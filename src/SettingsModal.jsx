@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { exportBackup, importBackup } from './storage'
 
 const MAX_TASKS = 6
 const MIN_TASKS = 1
 
-export default function SettingsModal({ settings, onSave, onClose }) {
+export default function SettingsModal({ settings, onSave, onClose, onImport }) {
   const [goal, setGoal] = useState(settings.goal)
   const [startDate, setStartDate] = useState(settings.startDate)
   const [tasks, setTasks] = useState([...settings.tasks])
+  const [backupMsg, setBackupMsg] = useState('')
+  const fileInputRef = useRef(null)
 
   const updateTask = (i, value) => {
     const next = [...tasks]
@@ -23,6 +26,38 @@ export default function SettingsModal({ settings, onSave, onClose }) {
       startDate,
       tasks: cleanTasks.length ? cleanTasks : settings.tasks,
     })
+  }
+
+  const handleExport = () => {
+    const blob = new Blob([exportBackup()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = Object.assign(document.createElement('a'), {
+      href: url,
+      download: `12week-compass-backup-${startDate}.json`,
+    })
+    a.click()
+    URL.revokeObjectURL(url)
+    setBackupMsg('書き出しました')
+  }
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const data = importBackup(reader.result)
+        onImport(data)
+        setGoal(data.settings.goal)
+        setStartDate(data.settings.startDate)
+        setTasks([...data.settings.tasks])
+        setBackupMsg('読み込みました')
+      } catch {
+        setBackupMsg('読み込みに失敗しました（ファイル形式を確認してください）')
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
   }
 
   return (
@@ -46,6 +81,19 @@ export default function SettingsModal({ settings, onSave, onClose }) {
         {tasks.length < MAX_TASKS && (
           <button style={addBtn} onClick={addTask}>＋ タスクを追加</button>
         )}
+
+        <div style={backupBox}>
+          <label style={label}>バックアップ</label>
+          <div style={{ fontSize: 11, color: '#5A544A', marginBottom: 8 }}>
+            データはこの端末のブラウザ内にのみ保存されます。消失に備えて定期的にファイルへ書き出すことをおすすめします。
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button style={backupBtn} onClick={handleExport}>書き出す</button>
+            <button style={backupBtn} onClick={() => fileInputRef.current?.click()}>読み込む</button>
+          </div>
+          <input ref={fileInputRef} type="file" accept="application/json" onChange={handleImportFile} style={{ display: 'none' }} />
+          {backupMsg && <div style={{ fontSize: 11, color: '#8A8377', marginTop: 6 }}>{backupMsg}</div>}
+        </div>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
           <button style={cancelBtn} onClick={onClose}>キャンセル</button>
@@ -85,4 +133,9 @@ const cancelBtn = {
 const saveBtn = {
   flex: 1, background: '#E6E1D6', border: 'none', borderRadius: 8,
   color: '#0D0D0D', fontSize: 15, fontWeight: 700, padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
+}
+const backupBox = { marginTop: 18, paddingTop: 14, borderTop: '1px solid #221F1A' }
+const backupBtn = {
+  flex: 1, background: 'transparent', border: '1px solid #2A2620', borderRadius: 8,
+  color: '#B8B0A2', fontSize: 13, padding: '9px', cursor: 'pointer', fontFamily: 'inherit',
 }

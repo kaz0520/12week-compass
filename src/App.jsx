@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import SettingsModal from './SettingsModal'
-import { loadSettings, saveSettings, loadDays, saveDays, getDayRecord } from './storage'
+import { loadSettings, saveSettings, loadDays, saveDays, getDayRecord, requestPersistentStorage } from './storage'
 import { TOTAL_DAYS, TOTAL_WEEKS, toISODate, addDays, diffDays, weekdayLabel, formatMonthDay } from './utils'
 
 const TODAY = toISODate()
@@ -10,6 +10,8 @@ export default function App() {
   const [days, setDays] = useState(loadDays)
   const [showSettings, setShowSettings] = useState(false)
   const [evidenceInput, setEvidenceInput] = useState('')
+
+  useEffect(() => { requestPersistentStorage() }, [])
 
   const taskCount = settings.tasks.length
 
@@ -195,6 +197,10 @@ export default function App() {
             setSettings(next)
             saveSettings(next)
             setShowSettings(false)
+          }}
+          onImport={(data) => {
+            setSettings(data.settings)
+            setDays(data.days)
           }}
         />
       )}
