@@ -5,6 +5,8 @@ import { TOTAL_DAYS, TOTAL_WEEKS, toISODate, addDays, diffDays, weekdayLabel, fo
 
 const TODAY = toISODate()
 
+const SYMBOL_COLOR = { '○': '#2E8B67', '△': '#B8860B', '×': '#B23B3B', '・': '#C9C2B2' }
+
 function DayDetail({ date, days, tasks }) {
   const record = getDayRecord(days, date, tasks.length)
   return (
@@ -12,8 +14,8 @@ function DayDetail({ date, days, tasks }) {
       <div style={dayDetailHeader}>{formatMonthDay(date)}（{weekdayLabel(date)}）</div>
       {tasks.map((t, i) => (
         <div key={i} style={dayDetailTaskRow}>
-          <span style={{ color: record.checks[i] ? '#2A9D8F' : '#4A453D' }}>{record.checks[i] ? '✓' : '□'}</span>
-          <span style={{ color: record.checks[i] ? '#C8C0B4' : '#5A544A' }}>{t}</span>
+          <span style={{ color: record.checks[i] ? '#2E8B67' : '#C9C2B2' }}>{record.checks[i] ? '✓' : '□'}</span>
+          <span style={{ color: record.checks[i] ? '#2B2620' : '#A9A08D' }}>{t}</span>
         </div>
       ))}
       {record.evidence.length > 0 ? (
@@ -126,7 +128,7 @@ export default function App() {
         ) : finished ? (
           <span style={remainingText}>12週間が終了しました</span>
         ) : (
-          <span style={remainingText}>残り <b style={{ color: '#EDE7DB', fontSize: 20 }}>{remainingDays}</b> 日（{dayNumber}/{TOTAL_DAYS}日目）</span>
+          <span style={remainingText}>残り <b style={{ color: '#2B2620', fontSize: 20 }}>{remainingDays}</b> 日（{dayNumber}/{TOTAL_DAYS}日目）</span>
         )}
       </div>
 
@@ -225,7 +227,7 @@ export default function App() {
             >
               <div style={weekCellDay}>{weekdayLabel(d.date)}</div>
               <div style={weekCellDate}>{formatMonthDay(d.date)}</div>
-              <div style={weekCellSymbol}>{d.symbol}</div>
+              <div style={{ ...weekCellSymbol, color: SYMBOL_COLOR[d.symbol] }}>{d.symbol}</div>
             </div>
           ))}
         </div>
@@ -262,84 +264,84 @@ export default function App() {
 // ── styles ──────────────────────────────────────────────
 const page = {
   minHeight: '100vh', maxWidth: 480, margin: '0 auto',
-  padding: '20px 16px 60px', color: '#DDD5C8',
+  padding: '20px 16px 60px', color: '#2B2620', background: '#F7F4EE',
 }
 const header = { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 4 }
-const goalLabel = { fontSize: 11, color: '#6B6459', letterSpacing: 1, marginBottom: 4 }
-const goalText = { fontSize: 19, fontWeight: 700, color: '#F0EBE0', lineHeight: 1.4 }
+const goalLabel = { fontSize: 11, color: '#8C8574', letterSpacing: 1, marginBottom: 4 }
+const goalText = { fontSize: 19, fontWeight: 700, color: '#2B2620', lineHeight: 1.4 }
 const gearBtn = {
-  background: 'transparent', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#8A8377', fontSize: 16, width: 36, height: 36, cursor: 'pointer', flexShrink: 0,
+  background: '#FFFFFF', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#756E5F', fontSize: 16, width: 36, height: 36, cursor: 'pointer', flexShrink: 0,
 }
 const remainingRow = { marginBottom: 20 }
-const remainingText = { fontSize: 13, color: '#8A8377' }
+const remainingText = { fontSize: 13, color: '#756E5F' }
 
 const card = {
-  background: '#131210', border: '1px solid #211E19', borderRadius: 12,
+  background: '#FFFFFF', border: '1px solid #E7E1D3', borderRadius: 12,
   padding: '16px 16px 18px', marginBottom: 14,
 }
-const cardTitle = { fontSize: 12, color: '#6B6459', letterSpacing: 1, marginBottom: 12, textTransform: 'uppercase' }
+const cardTitle = { fontSize: 12, color: '#8C8574', letterSpacing: 1, marginBottom: 12, textTransform: 'uppercase' }
 
 const checkRow = { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', cursor: 'pointer' }
-const checkbox = { width: 20, height: 20, accentColor: '#E6E1D6', flexShrink: 0 }
-const checkLabel = { fontSize: 15, color: '#DDD5C8' }
-const checkLabelDone = { color: '#6B6459', textDecoration: 'line-through' }
+const checkbox = { width: 20, height: 20, accentColor: '#2B2620', flexShrink: 0 }
+const checkLabel = { fontSize: 15, color: '#2B2620' }
+const checkLabelDone = { color: '#A9A08D', textDecoration: 'line-through' }
 
 const evidenceInputRow = { display: 'flex', gap: 8, marginBottom: 10 }
 const evidenceInputStyle = {
-  flex: 1, background: '#0D0D0D', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#EDE7DB', fontSize: 14, padding: '9px 11px', fontFamily: 'inherit', outline: 'none',
+  flex: 1, background: '#FAF8F3', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#2B2620', fontSize: 14, padding: '9px 11px', fontFamily: 'inherit', outline: 'none',
 }
 const addEvidenceBtn = {
-  background: '#E6E1D6', border: 'none', borderRadius: 8, color: '#0D0D0D',
+  background: '#2B2620', border: 'none', borderRadius: 8, color: '#FFFFFF',
   fontSize: 13, fontWeight: 700, padding: '0 16px', cursor: 'pointer', fontFamily: 'inherit',
 }
 const evidenceList = { listStyle: 'none', marginBottom: 14 }
 const evidenceItem = {
-  display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#B8B0A2',
-  padding: '6px 0', borderBottom: '1px solid #1A1815',
+  display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4A4438',
+  padding: '6px 0', borderBottom: '1px solid #EDE7D9',
 }
-const evidenceDelBtn = { background: 'none', border: 'none', color: '#4A453D', fontSize: 15, cursor: 'pointer' }
+const evidenceDelBtn = { background: 'none', border: 'none', color: '#B8AF9C', fontSize: 15, cursor: 'pointer' }
 
 const bigTotalBox = { textAlign: 'center', padding: '16px 0 6px' }
-const bigTotalLabel = { fontSize: 12, color: '#8A8377', marginBottom: 4 }
-const bigTotalValue = { fontSize: 44, fontWeight: 900, color: '#F0EBE0', lineHeight: 1 }
-const bigTotalUnit = { fontSize: 18, fontWeight: 500, color: '#8A8377', marginLeft: 4 }
+const bigTotalLabel = { fontSize: 12, color: '#8C8574', marginBottom: 4 }
+const bigTotalValue = { fontSize: 44, fontWeight: 900, color: '#2B2620', lineHeight: 1 }
+const bigTotalUnit = { fontSize: 18, fontWeight: 500, color: '#8C8574', marginLeft: 4 }
 
-const pastWeeksBox = { marginTop: 14, paddingTop: 12, borderTop: '1px solid #1A1815' }
-const pastWeeksTitle = { fontSize: 11, color: '#6B6459', marginBottom: 8 }
+const pastWeeksBox = { marginTop: 14, paddingTop: 12, borderTop: '1px solid #EDE7D9' }
+const pastWeeksTitle = { fontSize: 11, color: '#8C8574', marginBottom: 8 }
 const pastWeekRow = {
-  display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#9B9488',
+  display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#5C5648',
   padding: '7px 2px', cursor: 'pointer',
 }
 const pastWeekDetailBox = { marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }
 
 const dayDetailBox = {
-  background: '#0D0D0D', border: '1px solid #211E19', borderRadius: 8,
+  background: '#FAF8F3', border: '1px solid #E7E1D3', borderRadius: 8,
   padding: '10px 12px', marginTop: 8, marginBottom: 8,
 }
-const dayDetailHeader = { fontSize: 12, color: '#8A8377', marginBottom: 8, fontWeight: 700 }
+const dayDetailHeader = { fontSize: 12, color: '#756E5F', marginBottom: 8, fontWeight: 700 }
 const dayDetailTaskRow = { display: 'flex', gap: 8, fontSize: 13, padding: '3px 0' }
 const dayDetailEvidenceList = {
-  listStyle: 'none', marginTop: 8, paddingTop: 8, borderTop: '1px solid #1A1815',
-  fontSize: 12, color: '#9B9488', display: 'flex', flexDirection: 'column', gap: 4,
+  listStyle: 'none', marginTop: 8, paddingTop: 8, borderTop: '1px solid #EDE7D9',
+  fontSize: 12, color: '#5C5648', display: 'flex', flexDirection: 'column', gap: 4,
 }
 const dayDetailEmpty = {
-  marginTop: 8, paddingTop: 8, borderTop: '1px solid #1A1815', fontSize: 12, color: '#4A453D',
+  marginTop: 8, paddingTop: 8, borderTop: '1px solid #EDE7D9', fontSize: 12, color: '#A9A08D',
 }
 
 const rateRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }
-const rateLabel = { fontSize: 13, color: '#8A8377' }
-const rateValue = { fontSize: 15, fontWeight: 700, color: '#EDE7DB' }
+const rateLabel = { fontSize: 13, color: '#756E5F' }
+const rateValue = { fontSize: 15, fontWeight: 700, color: '#2B2620' }
 
 const weekGrid = { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, margin: '10px 0' }
 const weekCell = {
-  background: '#0D0D0D', border: '1px solid #211E19', borderRadius: 8,
+  background: '#FAF8F3', border: '1px solid #E7E1D3', borderRadius: 8,
   textAlign: 'center', padding: '8px 2px',
 }
-const weekCellToday = { border: '1px solid #4A453D', background: '#17140F' }
+const weekCellToday = { border: '1px solid #B8AF9C', background: '#F1EBDC' }
 const weekCellClickable = { cursor: 'pointer' }
-const weekCellSelected = { border: '1px solid #6B6459', background: '#1C1812' }
-const weekCellDay = { fontSize: 10, color: '#6B6459' }
-const weekCellDate = { fontSize: 9, color: '#4A453D', marginBottom: 4 }
-const weekCellSymbol = { fontSize: 16, fontWeight: 700, color: '#DDD5C8' }
+const weekCellSelected = { border: '1px solid #8C8574', background: '#EFE7D4' }
+const weekCellDay = { fontSize: 10, color: '#8C8574' }
+const weekCellDate = { fontSize: 9, color: '#B8AF9C', marginBottom: 4 }
+const weekCellSymbol = { fontSize: 16, fontWeight: 700 }

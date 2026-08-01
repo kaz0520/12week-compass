@@ -63,7 +63,7 @@ export default function SettingsModal({ settings, onSave, onClose, onImport }) {
   return (
     <div style={overlay}>
       <div style={panel}>
-        <div style={{ fontSize: 13, letterSpacing: 1, color: '#8A8377', marginBottom: 16 }}>設定</div>
+        <div style={{ fontSize: 13, letterSpacing: 1, color: '#756E5F', marginBottom: 16 }}>設定</div>
 
         <label style={label}>12週間の目標</label>
         <input style={input} value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="例：子どもを見る目を鍛える" />
@@ -84,7 +84,7 @@ export default function SettingsModal({ settings, onSave, onClose, onImport }) {
 
         <div style={backupBox}>
           <label style={label}>バックアップ</label>
-          <div style={{ fontSize: 11, color: '#5A544A', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#8C8574', marginBottom: 8 }}>
             データはこの端末のブラウザ内にのみ保存されます。消失に備えて定期的にファイルへ書き出すことをおすすめします。
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -92,7 +92,7 @@ export default function SettingsModal({ settings, onSave, onClose, onImport }) {
             <button style={backupBtn} onClick={() => fileInputRef.current?.click()}>読み込む</button>
           </div>
           <input ref={fileInputRef} type="file" accept="application/json" onChange={handleImportFile} style={{ display: 'none' }} />
-          {backupMsg && <div style={{ fontSize: 11, color: '#8A8377', marginTop: 6 }}>{backupMsg}</div>}
+          {backupMsg && <div style={{ fontSize: 11, color: '#756E5F', marginTop: 6 }}>{backupMsg}</div>}
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
@@ -105,37 +105,37 @@ export default function SettingsModal({ settings, onSave, onClose, onImport }) {
 }
 
 const overlay = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+  position: 'fixed', inset: 0, background: 'rgba(43,38,32,0.4)',
   display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100,
 }
 const panel = {
-  width: '100%', maxWidth: 480, background: '#161412', borderRadius: '16px 16px 0 0',
-  padding: '22px 20px 26px', boxShadow: '0 -4px 24px rgba(0,0,0,0.4)',
+  width: '100%', maxWidth: 480, background: '#FFFFFF', borderRadius: '16px 16px 0 0',
+  padding: '22px 20px 26px', boxShadow: '0 -4px 24px rgba(43,38,32,0.15)',
 }
-const label = { display: 'block', fontSize: 12, color: '#8A8377', marginBottom: 6, marginTop: 14 }
+const label = { display: 'block', fontSize: 12, color: '#8C8574', marginBottom: 6, marginTop: 14 }
 const input = {
-  width: '100%', background: '#0D0D0D', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#EDE7DB', fontSize: 15, padding: '10px 12px', fontFamily: 'inherit',
+  width: '100%', background: '#FAF8F3', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#2B2620', fontSize: 15, padding: '10px 12px', fontFamily: 'inherit',
   marginBottom: 4, boxSizing: 'border-box', outline: 'none',
 }
 const smallBtn = {
-  width: 40, background: '#0D0D0D', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#8A8377', fontSize: 16, cursor: 'pointer',
+  width: 40, background: '#FAF8F3', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#8C8574', fontSize: 16, cursor: 'pointer',
 }
 const addBtn = {
-  width: '100%', background: 'transparent', border: '1px dashed #3A352C', borderRadius: 8,
-  color: '#8A8377', fontSize: 13, padding: '9px', cursor: 'pointer', fontFamily: 'inherit', marginTop: 2,
+  width: '100%', background: 'transparent', border: '1px dashed #D8CFBB', borderRadius: 8,
+  color: '#8C8574', fontSize: 13, padding: '9px', cursor: 'pointer', fontFamily: 'inherit', marginTop: 2,
 }
 const cancelBtn = {
-  flex: 1, background: 'transparent', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#8A8377', fontSize: 15, padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
+  flex: 1, background: 'transparent', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#756E5F', fontSize: 15, padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
 }
 const saveBtn = {
-  flex: 1, background: '#E6E1D6', border: 'none', borderRadius: 8,
-  color: '#0D0D0D', fontSize: 15, fontWeight: 700, padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
+  flex: 1, background: '#2B2620', border: 'none', borderRadius: 8,
+  color: '#FFFFFF', fontSize: 15, fontWeight: 700, padding: '12px', cursor: 'pointer', fontFamily: 'inherit',
 }
-const backupBox = { marginTop: 18, paddingTop: 14, borderTop: '1px solid #221F1A' }
+const backupBox = { marginTop: 18, paddingTop: 14, borderTop: '1px solid #EDE7D9' }
 const backupBtn = {
-  flex: 1, background: 'transparent', border: '1px solid #2A2620', borderRadius: 8,
-  color: '#B8B0A2', fontSize: 13, padding: '9px', cursor: 'pointer', fontFamily: 'inherit',
+  flex: 1, background: 'transparent', border: '1px solid #E7E1D3', borderRadius: 8,
+  color: '#5C5648', fontSize: 13, padding: '9px', cursor: 'pointer', fontFamily: 'inherit',
 }
