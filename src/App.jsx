@@ -5,11 +5,35 @@ import { TOTAL_DAYS, TOTAL_WEEKS, toISODate, addDays, diffDays, weekdayLabel, fo
 
 const TODAY = toISODate()
 
+function DayDetail({ date, days, tasks }) {
+  const record = getDayRecord(days, date, tasks.length)
+  return (
+    <div style={dayDetailBox}>
+      <div style={dayDetailHeader}>{formatMonthDay(date)}（{weekdayLabel(date)}）</div>
+      {tasks.map((t, i) => (
+        <div key={i} style={dayDetailTaskRow}>
+          <span style={{ color: record.checks[i] ? '#2A9D8F' : '#4A453D' }}>{record.checks[i] ? '✓' : '□'}</span>
+          <span style={{ color: record.checks[i] ? '#C8C0B4' : '#5A544A' }}>{t}</span>
+        </div>
+      ))}
+      {record.evidence.length > 0 ? (
+        <ul style={dayDetailEvidenceList}>
+          {record.evidence.map((e, i) => <li key={i}>{e}</li>)}
+        </ul>
+      ) : (
+        <div style={dayDetailEmpty}>この日の記録はありません</div>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [settings, setSettings] = useState(loadSettings)
   const [days, setDays] = useState(loadDays)
   const [showSettings, setShowSettings] = useState(false)
   const [evidenceInput, setEvidenceInput] = useState('')
+  const [expandedDate, setExpandedDate] = useState(null)
+  const [expandedWeek, setExpandedWeek] = useState(null)
 
   useEffect(() => { requestPersistentStorage() }, [])
 
@@ -66,7 +90,7 @@ export default function App() {
       const start = addDays(settings.startDate, w * 7)
       const dates = Array.from({ length: 7 }, (_, i) => addDays(start, i))
       const total = dates.reduce((sum, d) => sum + (days[d]?.evidence?.length || 0), 0)
-      list.push({ week: w + 1, total })
+      list.push({ week: w + 1, total, dates })
     }
     return list.reverse()
   }, [weekIndex, settings.startDate, days])
@@ -76,13 +100,13 @@ export default function App() {
   const weekDayStatus = weekDates.map((d) => {
     const isFuture = diffDays(d, TODAY) > 0
     const isBeforeStart = diffDays(d, settings.startDate) < 0
-    if (isFuture || isBeforeStart) return { date: d, symbol: '・', isToday: d === TODAY }
+    if (isFuture || isBeforeStart) return { date: d, symbol: '・', isToday: d === TODAY, clickable: false }
     const record = getDayRecord(days, d, taskCount)
     const checked = record.checks.filter(Boolean).length
     daysSoFarInWeek += 1
     weekChecksSoFar += checked
     const symbol = taskCount === 0 ? '・' : checked === taskCount ? '○' : checked === 0 ? '×' : '△'
-    return { date: d, symbol, isToday: d === TODAY }
+    return { date: d, symbol, isToday: d === TODAY, clickable: true }
   })
   const weekRate = daysSoFarInWeek && taskCount ? Math.round((weekChecksSoFar / (taskCount * daysSoFarInWeek)) * 100) : 0
 
@@ -153,11 +177,25 @@ export default function App() {
 
         {pastWeeksTotals.length > 0 && (
           <div style={pastWeeksBox}>
-            <div style={pastWeeksTitle}>過去の週の合計</div>
+            <div style={pastWeeksTitle}>過去の週の合計（タップで内訳）</div>
             {pastWeeksTotals.map((w) => (
-              <div key={w.week} style={pastWeekRow}>
-                <span>第{w.week}週</span>
-                <span>{w.total}個</span>
+              <div key={w.week}>
+                <div
+                  style={pastWeekRow}
+                  onClick={() => setExpandedWeek(expandedWeek === w.week ? null : w.week)}
+                >
+                  <span>{expandedWeek === w.week ? '▾' : '▸'} 第{w.week}週</span>
+                  <span>{w.total}個</span>
+                </div>
+                {expandedWeek === w.week && (
+                  <div style={pastWeekDetailBox}>
+                    {w.dates
+                      .filter((d) => diffDays(d, TODAY) <= 0)
+                      .map((d) => (
+                        <DayDetail key={d} date={d} days={days} tasks={settings.tasks} />
+                      ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -175,13 +213,26 @@ export default function App() {
 
         <div style={weekGrid}>
           {weekDayStatus.map((d) => (
-            <div key={d.date} style={{ ...weekCell, ...(d.isToday ? weekCellToday : {}) }}>
+            <div
+              key={d.date}
+              style={{
+                ...weekCell,
+                ...(d.isToday ? weekCellToday : {}),
+                ...(d.clickable ? weekCellClickable : {}),
+                ...(expandedDate === d.date ? weekCellSelected : {}),
+              }}
+              onClick={() => d.clickable && setExpandedDate(expandedDate === d.date ? null : d.date)}
+            >
               <div style={weekCellDay}>{weekdayLabel(d.date)}</div>
               <div style={weekCellDate}>{formatMonthDay(d.date)}</div>
               <div style={weekCellSymbol}>{d.symbol}</div>
             </div>
           ))}
         </div>
+
+        {expandedDate && weekDates.includes(expandedDate) && (
+          <DayDetail date={expandedDate} days={days} tasks={settings.tasks} />
+        )}
 
         <div style={rateRow}>
           <span style={rateLabel}>今週の実行率</span>
@@ -257,7 +308,25 @@ const bigTotalUnit = { fontSize: 18, fontWeight: 500, color: '#8A8377', marginLe
 
 const pastWeeksBox = { marginTop: 14, paddingTop: 12, borderTop: '1px solid #1A1815' }
 const pastWeeksTitle = { fontSize: 11, color: '#6B6459', marginBottom: 8 }
-const pastWeekRow = { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#9B9488', padding: '3px 0' }
+const pastWeekRow = {
+  display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#9B9488',
+  padding: '7px 2px', cursor: 'pointer',
+}
+const pastWeekDetailBox = { marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }
+
+const dayDetailBox = {
+  background: '#0D0D0D', border: '1px solid #211E19', borderRadius: 8,
+  padding: '10px 12px', marginTop: 8, marginBottom: 8,
+}
+const dayDetailHeader = { fontSize: 12, color: '#8A8377', marginBottom: 8, fontWeight: 700 }
+const dayDetailTaskRow = { display: 'flex', gap: 8, fontSize: 13, padding: '3px 0' }
+const dayDetailEvidenceList = {
+  listStyle: 'none', marginTop: 8, paddingTop: 8, borderTop: '1px solid #1A1815',
+  fontSize: 12, color: '#9B9488', display: 'flex', flexDirection: 'column', gap: 4,
+}
+const dayDetailEmpty = {
+  marginTop: 8, paddingTop: 8, borderTop: '1px solid #1A1815', fontSize: 12, color: '#4A453D',
+}
 
 const rateRow = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }
 const rateLabel = { fontSize: 13, color: '#8A8377' }
@@ -269,6 +338,8 @@ const weekCell = {
   textAlign: 'center', padding: '8px 2px',
 }
 const weekCellToday = { border: '1px solid #4A453D', background: '#17140F' }
+const weekCellClickable = { cursor: 'pointer' }
+const weekCellSelected = { border: '1px solid #6B6459', background: '#1C1812' }
 const weekCellDay = { fontSize: 10, color: '#6B6459' }
 const weekCellDate = { fontSize: 9, color: '#4A453D', marginBottom: 4 }
 const weekCellSymbol = { fontSize: 16, fontWeight: 700, color: '#DDD5C8' }
