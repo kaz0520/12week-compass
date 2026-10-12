@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import SettingsModal from './SettingsModal'
-import { loadSettings, saveSettings, loadDays, saveDays, getDayRecord, requestPersistentStorage } from './storage'
+import PomodoroTimer from './PomodoroTimer'
+import RecallCards from './RecallCards'
+import { loadSettings, saveSettings, loadDays, saveDays, loadCards, saveCards, getDayRecord, requestPersistentStorage } from './storage'
 import { TOTAL_DAYS, TOTAL_WEEKS, toISODate, addDays, diffDays, weekdayLabel, formatMonthDay } from './utils'
 
 const TODAY = toISODate()
@@ -18,6 +20,12 @@ function DayDetail({ date, days, tasks }) {
           <span style={{ color: record.checks[i] ? '#2B2620' : '#A9A08D' }}>{t}</span>
         </div>
       ))}
+      {(record.pomodoros > 0 || record.reviews > 0) && (
+        <div style={dayDetailStats}>
+          {record.pomodoros > 0 && <span>ポモドーロ {record.pomodoros}回</span>}
+          {record.reviews > 0 && <span>想起テスト {record.reviews}枚</span>}
+        </div>
+      )}
       {record.evidence.length > 0 ? (
         <ul style={dayDetailEvidenceList}>
           {record.evidence.map((e, i) => <li key={i}>{e}</li>)}
@@ -32,6 +40,7 @@ function DayDetail({ date, days, tasks }) {
 export default function App() {
   const [settings, setSettings] = useState(loadSettings)
   const [days, setDays] = useState(loadDays)
+  const [cards, setCards] = useState(loadCards)
   const [showSettings, setShowSettings] = useState(false)
   const [evidenceInput, setEvidenceInput] = useState('')
   const [expandedDate, setExpandedDate] = useState(null)
@@ -61,6 +70,30 @@ export default function App() {
   const persistDays = (next) => {
     setDays(next)
     saveDays(next)
+  }
+
+  // タイマー完了など非同期のコールバックからも使うため、最新の state を基に更新する
+  const updateToday = (fn) => {
+    setDays((prev) => {
+      const next = { ...prev, [TODAY]: fn(getDayRecord(prev, TODAY, taskCount)) }
+      saveDays(next)
+      return next
+    })
+  }
+
+  const recordPomodoro = (taskName) => {
+    updateToday((r) => ({
+      ...r,
+      pomodoros: r.pomodoros + 1,
+      evidence: [...r.evidence, `ポモドーロ25分${taskName ? `：${taskName}` : ''}`],
+    }))
+  }
+
+  const recordReview = () => updateToday((r) => ({ ...r, reviews: r.reviews + 1 }))
+
+  const persistCards = (next) => {
+    setCards(next)
+    saveCards(next)
   }
 
   const toggleCheck = (i) => {
@@ -147,6 +180,23 @@ export default function App() {
           </label>
         ))}
       </section>
+
+      {/* 2-1. ポモドーロ */}
+      <PomodoroTimer
+        tasks={settings.tasks}
+        todayCount={todayRecord.pomodoros}
+        disabled={notStarted}
+        onFocusComplete={recordPomodoro}
+      />
+
+      {/* 2-2. 想起テスト */}
+      <RecallCards
+        cards={cards}
+        today={TODAY}
+        todayReviews={todayRecord.reviews}
+        onChange={persistCards}
+        onReviewed={recordReview}
+      />
 
       {/* 3. できた証拠 */}
       <section style={card}>
@@ -254,6 +304,7 @@ export default function App() {
           onImport={(data) => {
             setSettings(data.settings)
             setDays(data.days)
+            setCards(data.cards)
           }}
         />
       )}
@@ -322,6 +373,9 @@ const dayDetailBox = {
 }
 const dayDetailHeader = { fontSize: 12, color: '#756E5F', marginBottom: 8, fontWeight: 700 }
 const dayDetailTaskRow = { display: 'flex', gap: 8, fontSize: 13, padding: '3px 0' }
+const dayDetailStats = {
+  display: 'flex', gap: 12, fontSize: 12, color: '#756E5F', marginTop: 6,
+}
 const dayDetailEvidenceList = {
   listStyle: 'none', marginTop: 8, paddingTop: 8, borderTop: '1px solid #EDE7D9',
   fontSize: 12, color: '#5C5648', display: 'flex', flexDirection: 'column', gap: 4,
